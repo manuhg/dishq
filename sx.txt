@@ -1,0 +1,10 @@
+Expansion of polyglutamine tracts in proteins results in protein aggregation and is associated with cell death in at least nine neurodegenerative diseases.
+Disease age of onset is correlated with the polyQ insert length above a critical value of 35 40 glutamines.
+The aggregation kinetics of isolated polyQ peptides in vitro also shows a similar critical-length dependence.
+While recent experimental work has provided considerable insights into polyQ aggregation, the molecular mechanism of aggregation is not well understood.
+Here, using computer simulations of isolated polyQ peptides, we show that a mechanism of aggregation is the conformational transition in a single polyQ peptide chain from random coil to a parallel -helix.
+This transition occurs selectively in peptides longer than 37 glutamines.
+In the -helices observed in simulations, all residues adopt -strand backbone dihedral angles, and the polypeptide chain coils around a central helical axis with 18.5 2 residues per turn.
+We also find that mutant polyQ peptides with proline-glycine inserts show formation of antiparallel -hairpins in their ground state, in agreement with experiments.
+The lower stability of mutant -helices explains their lower aggregation rates compared to wild type.
+Our results provide a molecular mechanism for polyQ-mediated aggregation.

@@ -1,3 +1,9 @@
+AIMX - 1
+BASE - 2
+CONT - 3
+MISC - 4
+OWNX - 5
+
 prn,nsubj,vb,vbp,nn,dt,verb, ROOT
 source /opt/anaconda/bin/activate
 nsubj,root,det,
