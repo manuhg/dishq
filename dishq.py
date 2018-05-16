@@ -1,6 +1,8 @@
 """script to classify sentences """
 #import numpy as np
+import pickle
 import spacy
+from sklearn import svm
 from sklearn.manifold import TSNE as tsne
 
 
@@ -17,8 +19,9 @@ def inc_bow(dictionary, key):
 #        dictionary[key]=1
 
 
-def process_sentence(sentence, dim_reduce=False, dims=300): #unicode encoded!
-    """process each sentence i.e extract only required parts"""
+def process_sentence(sentence, dim_reduce=False, dims=300):
+    """process each sentence i.e extract only required parts
+       input sentence must be enoced in utf-8 """
     if  isinstance(sentence, 'unicode'):
         tokens = NLP(sentence)
         deps = {}
@@ -45,19 +48,44 @@ def process_sentence(sentence, dim_reduce=False, dims=300): #unicode encoded!
 def process_data(x_raw, split_sentence=False, dim_reduce=False, dims=300):
     """extract required data for either training or for prediction """
     new_x = []
-    for x in x_raw:
+    for row in x_raw:
         if split_sentence:
-            sentences=NLP(x)
+            sentences = NLP(row)
             for sentence in sentences:
-               new_x.append(process_sentence(sentence.string))
+                new_x.append(process_sentence(sentence.string, dim_reduce, dims))
         else:
-            new_x.append(process_sentence(sentence.string))
+            new_x.append(process_sentence(sentence.string, dim_reduce, dims))
 
-def train(x_file,y_file):
+def load_pickle(filename="weights.pkl"):
+    """load saved, trained weights from file"""
+    with open(filename, 'rb') as pfile:
+        model = pickle.load(pfile)
+        return model
+    return None
+
+def save_pickle(data, filename="weights.pkl"):
+    """save  trained weights to file"""
+    with open(filename, 'wb') as pfile:
+        pickle.dump(data, pfile)
+        pfile.close()
+
+def train(x_file, y_file, split_sentence=False, dim_reduce=False, dims=300):
+    """train the model"""
     try:
-        x=open(x_file).read()
-        y=open(y_file).read()
-        x=process_data(x)
+        x = open(x_file).read()
+        y = open(y_file).read()
+        x = process_data(x, split_sentence, dim_reduce, dims)
+        classifier = svm.LinearSVC()
+        classifier.fit(x,y)
+        save_pickle(classifier)
+        return classifier
     except Exception as e:
         print("Unable to proceed with training.\n")
         print(e)
+    return None
+
+def predict(sentence, classifier=None):
+    """sentence must be a unicode encoded string"""
+    if classifier is None:
+        classifier=load_pickle()
+    classifier.decision_function(process_data(sentence))
