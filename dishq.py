@@ -6,11 +6,26 @@ from sklearn import svm
 from sklearn.manifold import TSNE as tsne
 
 
-EMBED_TAGS = ['root', 'nsubj', 'det']
-BOW_TAGS = ['verb', 'adv', 'adj', 'det', 'adv', 'aux', 'noun', 'pron', 'propn', 'nsubj', 'det']
+EMBED_TAGS = ['root', 'nsubj','adv', 'adj', 'det']
+#tags whose values' embeddings will be considered
+BOW_TAGS = ['verb', 'adv', 'adj', 'det', 'aux', 'noun', 'pron', 'propn', 'intj', 'nsubj', 'det']
+#tags to make bag of words
 
 print("Loading spacy en web large..")
 NLP = spacy.load('en_core_web_lg')
+
+def load_pickle(filename="weights.pkl"):
+    """load saved, trained weights from file"""
+    with open(filename, 'rb') as pfile:
+        model = pickle.load(pfile)
+        return model
+    return None
+
+def save_pickle(data, filename="weights.pkl"):
+    """save  trained weights to file"""
+    with open(filename, 'wb') as pfile:
+        pickle.dump(data, pfile)
+        pfile.close()
 
 def inc_bow(dictionary, key):
     """increment the value at key"""
@@ -18,7 +33,6 @@ def inc_bow(dictionary, key):
         dictionary[key] += 1
 #    else:
 #        dictionary[key]=1
-
 
 def add_embeddings(tags_lst, tag_dict, debug_dict, token, tag, dim_reduce=False, dims=300):
     """given a tag(pos or dependency), add its embeddings value to dictionary"""
@@ -38,7 +52,7 @@ def add_embeddings(tags_lst, tag_dict, debug_dict, token, tag, dim_reduce=False,
             debug_dict[tag]=token.text
 
 def process_sentence(sentence, dim_reduce=False, dims=300,echo=False):
-    """process each sentence i.e extract only required parts"""
+    """process each sentence i.e extract only required parts i.e pos and dependency"""
     tokens = NLP(sentence)
     embeddings = {}
     embeds_for_debug={}
@@ -73,30 +87,16 @@ def process_data(x_raw, split_sentence=False, dim_reduce=False, dims=300):
         if split_sentence:
             sentences = NLP(row)
             for sentence in sentences.sents:
-                print(sentence)
                 new_x.append(process_sentence(sentence.string, dim_reduce, dims))
         else:
             new_x.append(process_sentence(row, dim_reduce, dims))
     return new_x
 
-def load_pickle(filename="weights.pkl"):
-    """load saved, trained weights from file"""
-    with open(filename, 'rb') as pfile:
-        model = pickle.load(pfile)
-        return model
-    return None
-
-def save_pickle(data, filename="weights.pkl"):
-    """save  trained weights to file"""
-    with open(filename, 'wb') as pfile:
-        pickle.dump(data, pfile)
-        pfile.close()
-
 def train(x_file, y_file, split_sentence=False, dim_reduce=False, dims=300):
     """train the model"""
     try:
-        x = open(x_file).read()
-        y = open(y_file).read()
+        x = open(x_file).read().split("\n")
+        y = open(y_file).read().split("\n")
         x = process_data(x, split_sentence, dim_reduce, dims)
         classifier = svm.LinearSVC()
         classifier.fit(x,y)
@@ -107,8 +107,8 @@ def train(x_file, y_file, split_sentence=False, dim_reduce=False, dims=300):
         print(e)
     return None
 
-def predict(sentence, classifier=None):
+def predict(sentences, classifier=None,split_sentence=False, dim_reduce=False, dims=300):
     """sentence must be a unicode encoded string"""
     if classifier is None:
         classifier=load_pickle()
-    classifier.decision_function(process_data(sentence))
+    return classifier.decision_function(process_data(sentences,split_sentence, dim_reduce, dims))
