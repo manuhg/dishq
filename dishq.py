@@ -1,18 +1,17 @@
 """script to classify sentences """
 #import numpy as np
+import sys
 import pickle
 import spacy
 from sklearn import svm
 from sklearn.manifold import TSNE as tsne
-
+from sys import stdin
 
 EMBED_TAGS = ['root', 'nsubj','adv', 'adj', 'det']
 #tags whose values' embeddings will be considered
 BOW_TAGS = ['verb', 'adv', 'adj', 'det', 'aux', 'noun', 'pron', 'propn', 'intj', 'nsubj', 'det']
 #tags to make bag of words
 
-print("Loading spacy en web large..")
-NLP = spacy.load('en_core_web_lg')
 
 def load_pickle(filename="weights.pkl"):
     """load saved, trained weights from file"""
@@ -51,33 +50,33 @@ def add_embeddings(tags_lst, tag_dict, debug_dict, token, tag, dim_reduce=False,
             tag_dict[tag] = embed_vec
             debug_dict[tag]=token.text
 
-def process_sentence(sentence, dim_reduce=False, dims=300,echo=False):
+def process_sentence(sentence, dim_reduce=False, dims=300, echo=False):
     """process each sentence i.e extract only required parts i.e pos and dependency"""
     tokens = NLP(sentence)
     embeddings = {}
-    embeds_for_debug={}
+    embeds_for_debug = {}
     bag_of_words = {key:0 for key in BOW_TAGS}
     for token in tokens:
         deptag = token.dep_.lower()
         postag = token.pos_.lower()
         if echo:
-            print(token.text,deptag,postag)
+            print(token.text, deptag, postag)
 
         inc_bow(bag_of_words, deptag)
         inc_bow(bag_of_words, postag)
 
-        add_embeddings(EMBED_TAGS,embeddings,embeds_for_debug,token,deptag,dim_reduce,dims)
-        add_embeddings(EMBED_TAGS,embeddings,embeds_for_debug,token,postag,dim_reduce,dims)
+        add_embeddings(EMBED_TAGS, embeddings, embeds_for_debug, token, deptag, dim_reduce, dims)
+        add_embeddings(EMBED_TAGS, embeddings, embeds_for_debug, token, postag, dim_reduce, dims)
 
 
     for d in EMBED_TAGS:
         if d not in embeddings.keys():
-            embeddings[d]=[0]*dims
-            embeds_for_debug[d]=''
+            embeddings[d] = [0]*dims
+            embeds_for_debug[d] = ''
 
     if echo:
-        print("\nDeps:\n",embeds_for_debug,"\nbow:\n",bag_of_words)
-    return sum([sum(list(embeddings.values()),[]) ,list(bag_of_words.values())],[])
+        print("\nDeps:\n", embeds_for_debug, "\nbow:\n", bag_of_words)
+    return sum([sum(list(embeddings.values()), []), list(bag_of_words.values())], [])
 
 
 def process_data(x_raw, split_sentence=False, dim_reduce=False, dims=300):
@@ -91,15 +90,14 @@ def process_data(x_raw, split_sentence=False, dim_reduce=False, dims=300):
         else:
             new_x.append(process_sentence(row, dim_reduce, dims))
     return new_x
-
-def train(x_file, y_file, split_sentence=False, dim_reduce=False, dims=300):
+def train(x_file, y_file, classifier, split_sentence=False, dim_reduce=False, dims=300):
     """train the model"""
     try:
         x = open(x_file).read().split("\n")
         y = open(y_file).read().split("\n")
         x = process_data(x, split_sentence, dim_reduce, dims)
-        classifier = svm.LinearSVC()
-        classifier.fit(x,y)
+        #classifier = svm.LinearSVC()
+        classifier.fit(x, y)
         save_pickle(classifier)
         return classifier
     except Exception as e:
@@ -107,8 +105,30 @@ def train(x_file, y_file, split_sentence=False, dim_reduce=False, dims=300):
         print(e)
     return None
 
-def predict(sentences, classifier=None,split_sentence=False, dim_reduce=False, dims=300):
+def predict(sentences, classifier=None, split_sentence=False, dim_reduce=False, dims=300):
     """sentence must be a unicode encoded string"""
     if classifier is None:
-        classifier=load_pickle()
-    return classifier.decision_function(process_data(sentences,split_sentence, dim_reduce, dims))
+        classifier = load_pickle()
+    return classifier.decision_function(process_data(sentences, split_sentence, dim_reduce, dims))
+def main():
+    """main function"""
+    classes = ['AIMX','BASE','CONT','MISC','OWNX']
+    classifier = load_pickle()
+    if classifier:
+        print("Sucessfully loaded classifier")
+    else:
+        print("Failed to load classifier")
+        sys.exit(0)
+    sentences = []
+    print("Enter one or more sentences, hit enter for new sentence, Ctrl-D when you are done.")
+    for line in stdin:
+        sentences.append(line)
+    if sentences :
+        predictions=predict(sentences, classifier, False, True, 3)
+        for p in predictions:
+            print(p,classes.index(max(p)))
+
+print("Loading spacy en web large..")
+NLP = spacy.load('en_core_web_lg')
+if __name__ == "__main__":
+    main()

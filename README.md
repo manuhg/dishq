@@ -49,3 +49,8 @@ Make predictions using previously trained model
 `load_pickle(filename="weights.pkl")` - load pickle from file
 
 `save_pickle(data, filename="weights.pkl")` - save pickle from file
+
+ ## Sample output
+  The output scores are not very good, needs a lot of improvement.
+  The classes are as follows: `['AIMX','BASE','CONT','MISC','OWNX']`
+  ![sample output](data/sampleop.png?raw=true "Sample Output")
