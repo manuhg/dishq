@@ -72,10 +72,12 @@ def process_data(x_raw, split_sentence=False, dim_reduce=False, dims=300):
     for row in x_raw:
         if split_sentence:
             sentences = NLP(row)
-            for sentence in sentences:
+            for sentence in sentences.sents:
+                print(sentence)
                 new_x.append(process_sentence(sentence.string, dim_reduce, dims))
         else:
-            new_x.append(process_sentence(sentence.string, dim_reduce, dims))
+            new_x.append(process_sentence(row, dim_reduce, dims))
+    return new_x
 
 def load_pickle(filename="weights.pkl"):
     """load saved, trained weights from file"""
