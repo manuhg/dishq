@@ -1,6 +1,7 @@
-#Sentence Classifier
 
-##Approach to feature selection
+ # Sentence Classifier
+
+ ## Approach to feature selection
   1) consider a sentence, extract its parts of speech and dependencies
   2) for a given set of pos/dependency tags like ROOT which are unique and very important in a sentece, the GloVe embeddings are considered.  
   	 ex: if banana is the root in a sentence,   "banana" 's embeddings are considered
@@ -12,10 +13,10 @@
                                             or
           b) use vecotor norm i.e L2 norm of the token/word 's vector which is a single value
 
-##Classifier
+ ## Classifier
 SVM was used considering that a CNN would need more features than the ones currently in use which is 25.
 
-##Global Variables
+ ## Global Variables
 Global variables is not a very good idea. But in this case the NLP object is better off being global
 
 `NLP` - spacy object , contains en_core_web_lg ~ 857MB
@@ -25,7 +26,7 @@ Global variables is not a very good idea. But in this case the NLP object is bet
 `BOW_TAGS` - tags of pos/dependency using which a bag of words will be generated. 
  The bag of words counts the occurence of a type of pos tag. ex: the number of vers/adjectives etc
 
-##Functions
+ ## Functions
 
 `inc_bow(dictionary, key)` - increment count for making bag of words
 
